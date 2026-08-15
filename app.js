@@ -6,8 +6,13 @@
   const breadcrumbs = document.getElementById("breadcrumbs");
   const search = document.getElementById("archive-search");
   const clearSearch = document.getElementById("clear-search");
-  const currentMembers = data?.currentMembers || [];
-  const specialMembers = data?.specialMembers || [];
+  const archivedMembers = ["HAKNYEON", "NEW"];
+  const filterMembers = [...new Set([...(data?.currentMembers || []).filter((member) => !archivedMembers.includes(member)), ...archivedMembers])];
+  const specialMembers = (data?.specialMembers || []).filter((member) => !filterMembers.includes(member));
+  const memberLabels = {
+    HAKNYEON: "Haknyeon (2017-2025)",
+    NEW: "New (2017 - 2026)",
+  };
   const pageSize = 48;
   let visibleCount = pageSize;
   let activeSeriesId = "";
@@ -54,7 +59,7 @@
     const tiles = data.categories.map((category, index) => `
       <a class="archive-tile${category.featured ? " featured" : ""}" href="${hashFor("category", category.id)}">
         <span class="tile-label">0${index + 1} / ${category.featured ? "MAIN COLLECTION" : "ARCHIVE SECTION"}</span>
-        <div><h3>${escapeHtml(category.title)}</h3><p>${escapeHtml(category.description)}</p></div>
+        <div><h3>${escapeHtml(category.title)}</h3></div>
         <span class="tile-action">${categoryCount(category.id)} INDEXED ENTRIES →</span>
       </a>`).join("");
     const report = data.unmatched?.length ? `
@@ -74,14 +79,19 @@
       <div class="series-grid">${series.map((item, index) => `
         <a class="archive-tile" href="${hashFor("series", item.id)}">
           <span class="tile-label">${String(index + 1).padStart(2, "0")} / ${item.years.join("–")}</span>
-          <div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p></div>
+          <div><h3>${escapeHtml(item.title)}</h3></div>
           <span class="tile-action">${item.entries.length} ENTRIES →</span>
         </a>`).join("")}</div>`;
   }
 
   function entryHasSpecialMember(entry) {
     if ((entry.members || []).some((member) => specialMembers.includes(member))) return true;
-    return (entry.djs || []).some((dj) => !currentMembers.includes(String(dj).toUpperCase()));
+    return (entry.djs || []).some((dj) => !filterMembers.includes(String(dj).toUpperCase()));
+  }
+
+  function entryHasMember(entry, member) {
+    if (entry.allMembers) return true;
+    return (entry.members || []).includes(member) || (entry.djs || []).some((dj) => String(dj).toUpperCase() === member);
   }
 
   function episodeRanges(entries) {
@@ -96,13 +106,13 @@
 
   function filterControls(series) {
     const years = [...new Set(series.entries.map((entry) => entry.year).filter(Boolean))].sort((a, b) => b - a);
-    const availableMembers = currentMembers.filter((member) => series.entries.some((entry) => entry.allMembers || entry.members?.includes(member)));
+    const availableMembers = filterMembers.filter((member) => series.entries.some((entry) => entryHasMember(entry, member)));
     const hasSpecial = series.entries.some(entryHasSpecialMember);
     const ranges = episodeRanges(series.entries);
     return `
       <div class="controls">
         <label class="control">YEAR<select id="year-filter"><option value="all">ALL YEARS</option>${years.map((year) => `<option value="${year}"${String(filters.year) === String(year) ? " selected" : ""}>${year}</option>`).join("")}</select></label>
-        ${availableMembers.length || hasSpecial ? `<label class="control">MEMBER / DJ<select id="member-filter"><option value="all">ALL MEMBERS</option>${availableMembers.map((member) => `<option value="${member}"${filters.member === member ? " selected" : ""}>${member}</option>`).join("")}${hasSpecial ? `<option value="special"${filters.member === "special" ? " selected" : ""}>SPECIAL / OTHER DJs</option>` : ""}</select></label>` : ""}
+        ${availableMembers.length || hasSpecial ? `<label class="control">MEMBER / DJ<select id="member-filter"><option value="all">ALL MEMBERS</option>${availableMembers.map((member) => `<option value="${member}"${filters.member === member ? " selected" : ""}>${escapeHtml(memberLabels[member] || member)}</option>`).join("")}${hasSpecial ? `<option value="special"${filters.member === "special" ? " selected" : ""}>SPECIAL / OTHER DJs</option>` : ""}</select></label>` : ""}
         ${ranges.length ? `<label class="control">EPISODE<select id="episode-filter"><option value="all">ALL EPISODES</option>${ranges.map(([start, end]) => `<option value="${start}-${end}"${filters.episode === `${start}-${end}` ? " selected" : ""}>EP. ${start}–${end}</option>`).join("")}</select></label>` : ""}
         <label class="control">SORT<select id="sort-filter"><option value="desc"${filters.sort === "desc" ? " selected" : ""}>NEWEST FIRST</option><option value="asc"${filters.sort === "asc" ? " selected" : ""}>OLDEST FIRST</option></select></label>
       </div>`;
@@ -115,7 +125,7 @@
       if (filters.year !== "all" && String(entry.year) !== String(filters.year)) return false;
       if (filters.member !== "all") {
         if (filters.member === "special" && !entryHasSpecialMember(entry)) return false;
-        if (filters.member !== "special" && !entry.allMembers && !entry.members?.includes(filters.member)) return false;
+        if (filters.member !== "special" && !entryHasMember(entry, filters.member)) return false;
       }
       if (filters.episode !== "all") {
         const [start, end] = filters.episode.split("-").map(Number);
@@ -132,9 +142,12 @@
 
   function entryCard(entry, series) {
     const galleryCount = entry.media?.length || 0;
+    const galleryImages = (entry.media || []).filter(isImage);
+    const cover = galleryImages.length ? galleryImages[stableIndex(entry.id, galleryImages.length)] : null;
     const people = [...new Set([...(entry.djs || []), ...(entry.members || [])])].join(", ");
     const guests = (entry.guests || []).length ? ` · GUEST: ${entry.guests.join(", ")}` : "";
     return `<article class="episode-card">
+      ${cover ? `<a class="episode-thumb" href="${hashFor("episode", series.id, entry.id)}" aria-label="Open ${escapeAttr(entry.title)} gallery"><img src="${thumbnailUrl(cover.id)}" alt="" loading="lazy"></a>` : ""}
       <div class="episode-card-head"><span>${Number.isFinite(entry.episode) ? `EP. ${entry.episode}` : "ARCHIVE"}</span><span>${entry.date ? escapeHtml(formatDate(entry.date)) : escapeHtml(entry.year || "")}</span></div>
       <h3>${escapeHtml(entry.title)}</h3>
       <div class="episode-meta">${escapeHtml(people || "THE BOYZ")}${escapeHtml(guests)}${entry.hasSubtitles ? `<br><span class="sub-badge">SUBTITLES AVAILABLE</span>` : ""}</div>
@@ -143,6 +156,12 @@
         <a class="action-link primary" href="${hashFor("episode", series.id, entry.id)}">${galleryCount ? `GALLERY ${galleryCount}` : "DETAILS"} →</a>
       </div>
     </article>`;
+  }
+
+  function stableIndex(value, length) {
+    let hash = 2166136261;
+    for (const char of String(value)) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
+    return Math.abs(hash) % length;
   }
 
   function bindSeriesControls(series) {
@@ -166,7 +185,7 @@
     const entries = filteredEntries(series);
     setBreadcrumbs([{ label: "Radio Archive", href: "#home" }, { label: category.title, href: hashFor("category", category.id) }, { label: series.title }]);
     app.innerHTML = `
-      <div class="section-heading"><h2>${escapeHtml(series.title)}</h2><p>${escapeHtml(series.description)}</p></div>
+      <div class="section-heading"><h2>${escapeHtml(series.title)}</h2></div>
       ${filterControls(series)}
       <div class="result-bar"><span>${entries.length} MATCHING ENTRIES</span><span>${filters.sort === "desc" ? "NEWEST → OLDEST" : "OLDEST → NEWEST"}</span></div>
       ${entries.length ? `<div class="episode-grid">${entries.slice(0, visibleCount).map((entry) => entryCard(entry, series)).join("")}</div>${visibleCount < entries.length ? `<div class="load-wrap"><button id="load-more" class="load-more" type="button">LOAD ${Math.min(pageSize, entries.length - visibleCount)} MORE</button></div>` : ""}` : `<div class="empty-state">NO ENTRIES MATCH THESE FILTERS.</div>`}`;
