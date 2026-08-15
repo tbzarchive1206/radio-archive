@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2051d4">
+  <meta name="description" content="THE BOYZ radio, DJ program and Idol Radio archive.">
+  <title>Radio Archive — THE BOYZ Archive</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="site-shell">
+    <header class="site-header">
+      <div class="topline">
+        <a class="archive-link" href="https://tbzarchive1206.github.io/tbzarchive/">THE BOYZ / FAN ARCHIVE</a>
+        <nav class="top-nav" aria-label="Archive navigation">
+          <a href="#home">RADIO</a><span>/</span><a href="https://x.com/tbzarchive1206_">TWITTER ↗</a>
+        </nav>
+      </div>
+      <a class="hero-link" href="#home" aria-label="Radio Archive home">
+        <h1><span>RADIO</span><span class="outline-title">ARCHIVE</span></h1>
+      </a>
+      <div class="archive-stats" aria-label="Archive statistics">
+        <span><strong id="entry-count">—</strong> ENTRIES</span>
+        <span><strong id="media-count">—</strong> MEDIA FILES</span>
+        <span>UPDATED <strong id="updated-date">—</strong></span>
+        <span><strong>2× DAILY</strong> SYNC</span>
+      </div>
+    </header>
+
+    <section class="global-search" aria-label="Archive search">
+      <label for="archive-search" class="search-icon" aria-hidden="true">⌕</label>
+      <input id="archive-search" type="search" autocomplete="off" placeholder="SEARCH TITLE, YYMMDD, MEMBER, GUEST OR EPISODE…">
+      <button id="clear-search" class="text-button" type="button" hidden>CLEAR</button>
+    </section>
+
+    <div id="breadcrumbs" class="breadcrumbs" aria-label="Breadcrumb"></div>
+    <section id="app" aria-live="polite">
+      <p class="loading">LOADING RADIO ARCHIVE…</p>
+    </section>
+
+    <footer class="site-footer">
+      <span>RADIO ARCHIVE · THE BOYZ FAN ARCHIVE</span>
+      <span id="sync-status"></span>
+      <a href="https://drive.google.com/drive/folders/15Z9Uvm2FHJ_KSPa0bR8PztlXxlkueBJu">SOURCE FOLDER ↗</a>
+    </footer>
+  </main>
+  <script src="data/archive-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+name: Sync Radio Archive and deploy Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 4,16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: radio-archive-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Sync Google Drive and Google Sheets
+        env:
+          GOOGLE_DRIVE_API_KEY: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+        run: |
+          if [ -n "$GOOGLE_DRIVE_API_KEY" ]; then
+            python scripts/sync_archive.py
+          else
+            echo "GOOGLE_DRIVE_API_KEY is not configured; deploying the bundled snapshot."
+          fi
+
+      - name: Test archive
+        run: npm test
+
+      - name: Save synchronized data
+        run: |
+          if git diff --quiet -- data/archive-data.js data/sync-report.json; then
+            echo "Archive data is already current."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/archive-data.js data/sync-report.json
+            git commit -m "Update Radio Archive data"
+            git push
+          fi
+
+      - name: Build static site
+        run: python scripts/prepare_site.py
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

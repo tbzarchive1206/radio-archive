@@ -1,0 +1,11 @@
+{
+  "name": "radio-archive",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/archive.test.mjs",
+    "build": "python scripts/prepare_site.py",
+    "sync": "python scripts/sync_archive.py"
+  }
+}
