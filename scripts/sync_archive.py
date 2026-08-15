@@ -20,8 +20,8 @@ SHEET_ID = "13xdu9lNVG9cUriFfBfhQewghUZfwwCLY0tIFuEhSOTU"
 FOLDER_MIME = "application/vnd.google-apps.folder"
 KEY = os.environ.get("GOOGLE_DRIVE_API_KEY", "").strip()
 
-CURRENT_MEMBERS = ["SANGYEON", "JACOB", "YOUNGHOON", "HYUNJAE", "JUYEON", "KEVIN", "Q", "SUNWOO", "ERIC"]
-SPECIAL_MEMBERS = ["NEW", "HAKNYEON", "CHANHEE"]
+CURRENT_MEMBERS = ["SANGYEON", "JACOB", "YOUNGHOON", "HYUNJAE", "JUYEON", "KEVIN", "Q", "SUNWOO", "ERIC", "HAKNYEON", "NEW"]
+SPECIAL_MEMBERS = ["CHANHEE"]
 MEMBER_PATTERNS = [
     ("SANGYEON", re.compile(r"SANGYEON|상연", re.I)),
     ("JACOB", re.compile(r"JACOB|제이콥", re.I)),
