@@ -43,8 +43,15 @@ test("front end supports search, contextual filters and local galleries", async 
   assert.match(app, /episode-filter/);
   assert.match(app, /media-grid/);
   assert.match(app, /thumbnail\?id=/);
+  assert.match(app, /Haknyeon \(2017-2025\)/);
+  assert.match(app, /New \(2017 - 2026\)/);
+  assert.match(app, /episode-thumb/);
+  assert.doesNotMatch(app, /category\.description/);
+  assert.doesNotMatch(app, /item\.description/);
+  assert.doesNotMatch(app, /series\.description/);
   assert.doesNotMatch(html, /iframe/i);
   assert.doesNotMatch(await read("data/archive-data.js"), /GOOGLE_DRIVE_API_KEY/);
   assert.match(styles, /repeat\(4,minmax\(0,1fr\)\)/);
   assert.match(styles, /repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(styles, /\.site-shell\{width:100%/);
 });
