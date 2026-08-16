@@ -13,14 +13,33 @@ async function archiveData() {
   return context.window.RADIO_ARCHIVE_DATA;
 }
 
+async function syncReport() {
+  return JSON.parse(await read("data/sync-report.json"));
+}
+
 test("snapshot contains all expected collections", async () => {
   const data = await archiveData();
+  const report = await syncReport();
+  const seriesById = new Map(data.series.map((series) => [series.id, series]));
+  const minimumEntries = {
+    "idol-radio-s4": 162,
+    "idol-radio-early": 44,
+    "hello-the-b": 80,
+    "ebs-listening": 52,
+  };
+  const entries = data.series.flatMap((series) => series.entries);
+
   assert.equal(data.series.length, 9);
-  assert.equal(data.series.reduce((sum, series) => sum + series.entries.length, 0), 441);
-  assert.equal(data.series.find((series) => series.id === "idol-radio-s4").entries.length, 162);
-  assert.equal(data.series.find((series) => series.id === "idol-radio-early").entries.length, 44);
-  assert.equal(data.series.find((series) => series.id === "hello-the-b").entries.length, 80);
-  assert.equal(data.series.find((series) => series.id === "ebs-listening").entries.length, 52);
+  assert.equal(entries.length, report.entries);
+  assert.equal(new Set(entries.map((entry) => entry.id)).size, entries.length);
+
+  for (const [id, minimum] of Object.entries(minimumEntries)) {
+    assert.ok(seriesById.has(id), `Missing expected collection: ${id}`);
+    assert.ok(
+      seriesById.get(id).entries.length >= minimum,
+      `${id} unexpectedly lost entries`,
+    );
+  }
 });
 
 test("Season 4 rows have dates, links and matched galleries", async () => {
@@ -30,8 +49,16 @@ test("Season 4 rows have dates, links and matched galleries", async () => {
   assert.ok(entries.every((entry) => /^https:\/\//.test(entry.watchUrl)));
   assert.ok(entries.every((entry) => /^https:\/\//.test(entry.folderUrl)));
   assert.ok(entries.every((entry) => entry.media.length > 0));
-  assert.equal(data.unmatched.length, 1);
-  assert.equal(data.unmatched[0].date, "260616");
+  assert.ok(Array.isArray(data.unmatched));
+
+  const seasonDates = new Set(entries.map((entry) => entry.date));
+  for (const item of data.unmatched) {
+    assert.equal(item.kind, "photo-folder-without-sheet-row");
+    assert.match(item.date, /^\d{6}$/);
+    assert.match(item.folderUrl, /^https:\/\//);
+    assert.ok(item.mediaCount > 0);
+    assert.ok(!seasonDates.has(item.date), `Gallery ${item.date} should be matched`);
+  }
 });
 
 test("front end supports search, contextual filters and local galleries", async () => {

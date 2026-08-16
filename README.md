@@ -5,8 +5,8 @@ Samodzielne, statyczne repozytorium GitHub Pages dla archiwum audycji radiowych 
 ## Co zawiera
 
 - cztery główne działy: Idol Radio, Radio Series, DJ Programs i Guest Appearances;
-- 441 wpisów w dołączonym indeksie startowym;
-- 3862 pliki zdjęć, audio i wideo w galeriach;
+- indeks wpisów aktualizowany automatycznie z Google Drive i Google Sheets;
+- zdjęcia, pliki audio i wideo dostępne w galeriach;
 - pełnotekstowe wyszukiwanie po tytule, dacie `YYMMDD`, numerze odcinka, członku i gościu;
 - kontekstowe filtry roku, członka/DJ-a i zakresu numerów odcinków;
 - sortowanie od najnowszych lub najstarszych;
