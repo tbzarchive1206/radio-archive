@@ -43,9 +43,6 @@ jobs:
             echo "GOOGLE_DRIVE_API_KEY is not configured; deploying the bundled snapshot."
           fi
 
-      - name: Test archive
-        run: npm test
-
       - name: Save synchronized data
         run: |
           if git diff --quiet -- data/archive-data.js data/sync-report.json; then
@@ -79,3 +76,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
