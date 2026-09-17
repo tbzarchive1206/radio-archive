@@ -1,6 +1,14 @@
 {
-  "generatedAt": "2026-09-17T09:25:00.377321+00:00",
-  "entries": 455,
-  "mediaFiles": 4002,
-  "unmatched": []
+  "generatedAt": "2026-09-17T10:56:14.342566+00:00",
+  "entries": 459,
+  "mediaFiles": 4032,
+  "unmatched": [
+    {
+      "kind": "photo-folder-without-sheet-row",
+      "date": "250916",
+      "title": "[#아이돌라디오4 앨범 250916]",
+      "folderUrl": "https://drive.google.com/drive/folders/10ZxV-ihk-XAyRc36LapvRB0COboncZ-b",
+      "mediaCount": 1
+    }
+  ]
 }
