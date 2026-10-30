@@ -55,6 +55,9 @@ jobs:
             git push
           fi
 
+      - name: Export shared search index
+        run: node scripts/export-search.mjs
+
       - name: Build static site
         run: python scripts/prepare_site.py
 
