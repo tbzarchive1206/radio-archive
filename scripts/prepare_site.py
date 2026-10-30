@@ -8,7 +8,7 @@ if SITE.exists():
     shutil.rmtree(SITE)
 
 SITE.mkdir(parents=True)
-for name in ("index.html", "styles.css", "app.js"):
+for name in ("index.html", "styles.css", "app.js", "search-index.json"):
     shutil.copy2(ROOT / name, SITE / name)
 
 shutil.copytree(ROOT / "data", SITE / "data")

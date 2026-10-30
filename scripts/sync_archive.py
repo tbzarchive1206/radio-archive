@@ -53,7 +53,7 @@ def list_children(folder_id: str) -> list[dict]:
             "https://www.googleapis.com/drive/v3/files",
             {
                 "q": f"'{folder_id}' in parents and trashed = false",
-                "fields": "nextPageToken,files(id,name,mimeType,size,modifiedTime,webViewLink)",
+                "fields": "nextPageToken,files(id,name,description,mimeType,size,modifiedTime,webViewLink)",
                 "pageSize": 1000,
                 "orderBy": "name",
                 "supportsAllDrives": "true",
@@ -194,7 +194,7 @@ def direct_series(root_items: list[dict], root_folder: dict, series_id: str, tit
                 "year": None,
                 "title": clean_lead(item.get("name", "")),
                 "djs": [], "guests": [], "members": [],
-                "watchUrl": file_url(item), "folderUrl": "", "media": [],
+                "description": item.get("description", ""), "watchUrl": file_url(item), "folderUrl": "", "media": [],
                 "hasSubtitles": episode in subtitle_episodes,
                 "sortKey": episode or 0,
             }
@@ -216,7 +216,7 @@ def nested_series(folder: dict, series_id: str, title: str, description: str) ->
                 "id": f"{series_id}-{episode if episode is not None else item['id']}",
                 "episode": episode, "date": "", "year": 2022,
                 "title": clean_lead(item.get("name", "")), "djs": [], "guests": [], "members": [],
-                "watchUrl": file_url(item), "folderUrl": "", "media": [],
+                "description": item.get("description", ""), "watchUrl": file_url(item), "folderUrl": "", "media": [],
                 "hasSubtitles": episode in subtitle_episodes, "sortKey": episode or 0,
             }
         )
@@ -268,7 +268,7 @@ def build_archive() -> dict:
                 "id": f"idol-radio-s4-{row['episode']}", "episode": row["episode"], "date": row["date"], "year": year_of(row["date"]),
                 "title": row["title"], "djs": djs, "guests": guests,
                 "members": list(dict.fromkeys(detect_members(f"{row['dj']},{row['guest']}"))),
-                "watchUrl": row["watchUrl"], "folderUrl": row["folderUrl"] or (folder_url(folder) if folder else ""),
+                "description": folder.get("description", "") if folder else "", "watchUrl": row["watchUrl"], "folderUrl": row["folderUrl"] or (folder_url(folder) if folder else ""),
                 "media": [media_item(item) for item in files], "sortKey": int(row["date"]) * 1000 + row["episode"],
             }
         )
@@ -287,7 +287,7 @@ def build_archive() -> dict:
         early_entries.append(
             {"id": f"idol-radio-early-{order_of(folder['name']) or folder['id']}", "episode": episode, "date": date, "year": year_of(date),
              "title": clean_lead(folder["name"]), "djs": [], "guests": [], "members": detect_members(folder["name"]),
-             "watchUrl": file_url(av) if av else folder_url(folder), "folderUrl": folder_url(folder),
+             "description": folder.get("description", ""), "watchUrl": file_url(av) if av else folder_url(folder), "folderUrl": folder_url(folder),
              "media": [media_item(item) for item in files], "sortKey": int(date or 0) * 1000 + (episode or 0)}
         )
 
@@ -299,7 +299,7 @@ def build_archive() -> dict:
         ebs_entries.append(
             {"id": f"ebs-{episode or folder['id']}", "episode": episode, "date": date, "year": year_of(date), "title": clean_lead(folder["name"]),
              "djs": ["KEVIN", "JACOB"], "guests": [], "members": ["KEVIN", "JACOB"],
-             "watchUrl": file_url(av) if av else folder_url(folder), "folderUrl": folder_url(folder),
+             "description": folder.get("description", ""), "watchUrl": file_url(av) if av else folder_url(folder), "folderUrl": folder_url(folder),
              "media": [media_item(item) for item in files], "sortKey": int(date or 0) * 1000 + (episode or 0)}
         )
 
@@ -311,7 +311,7 @@ def build_archive() -> dict:
         mbc_entries.append(
             {"id": f"mbc-{episode or folder['id']}", "episode": episode, "date": date, "year": year_of(date), "title": clean_lead(folder["name"]),
              "djs": ["YOUNGHOON"], "guests": [], "members": ["YOUNGHOON"],
-             "watchUrl": file_url(av) if av else folder_url(folder), "folderUrl": folder_url(folder),
+             "description": folder.get("description", ""), "watchUrl": file_url(av) if av else folder_url(folder), "folderUrl": folder_url(folder),
              "media": [media_item(item) for item in files], "sortKey": int(date or 0) * 1000 + (episode or 0)}
         )
 
@@ -326,7 +326,7 @@ def build_archive() -> dict:
                 {"id": f"guest-{item['id']}", "episode": None, "date": date, "year": year_of(date) or int(year_folder["name"]),
                  "title": strip_extension(item.get("name", "")), "djs": [], "guests": [], "members": members,
                  "allMembers": bool(re.search(r"THE BOYZ", item.get("name", ""), re.I) and not members),
-                 "watchUrl": file_url(item), "folderUrl": "", "media": [], "sortKey": int(date or 0)}
+                 "description": item.get("description", ""), "watchUrl": file_url(item), "folderUrl": "", "media": [], "sortKey": int(date or 0)}
             )
 
     series = [
