@@ -142,12 +142,10 @@
 
   function entryCard(entry, series) {
     const galleryCount = entry.media?.length || 0;
-    const galleryImages = (entry.media || []).filter(isImage);
-    const cover = galleryImages.length ? galleryImages[stableIndex(entry.id, galleryImages.length)] : null;
     const people = [...new Set([...(entry.djs || []), ...(entry.members || [])])].join(", ");
     const guests = (entry.guests || []).length ? ` · GUEST: ${entry.guests.join(", ")}` : "";
     return `<article class="episode-card">
-      ${cover ? `<a class="episode-thumb" href="${hashFor("episode", series.id, entry.id)}" aria-label="Open ${escapeAttr(entry.title)} gallery"><img src="${thumbnailUrl(cover.id)}" alt="" loading="lazy"></a>` : ""}
+      ${galleryCount ? `<a class="episode-thumb" data-cover-entry="${escapeAttr(entry.id)}" href="${hashFor("episode", series.id, entry.id)}" aria-label="Open ${escapeAttr(entry.title)} gallery"><span>RADIO / GALLERY</span></a>` : ""}
       <div class="episode-card-head"><span>${Number.isFinite(entry.episode) ? `EP. ${entry.episode}` : "ARCHIVE"}</span><span>${entry.date ? escapeHtml(formatDate(entry.date)) : escapeHtml(entry.year || "")}</span></div>
       <h3>${escapeHtml(entry.title)}</h3>
       <div class="episode-meta">${escapeHtml(people || "THE BOYZ")}${escapeHtml(guests)}${entry.hasSubtitles ? `<br><span class="sub-badge">SUBTITLES AVAILABLE</span>` : ""}</div>
@@ -162,6 +160,51 @@
     let hash = 2166136261;
     for (const char of String(value)) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
     return Math.abs(hash) % length;
+  }
+
+  const landscapeChecks = new Map();
+  let thumbnailObserver;
+  function verifiedLandscape(item) {
+    if (!isImage(item)) return Promise.resolve(false);
+    const dimensions = item.imageMediaMetadata;
+    if (dimensions?.width && dimensions?.height && dimensions.width <= dimensions.height) return Promise.resolve(false);
+    if (!landscapeChecks.has(item.id)) landscapeChecks.set(item.id, new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => resolve(image.naturalWidth > image.naturalHeight);
+      image.onerror = () => resolve(false);
+      image.src = thumbnailUrl(item.id);
+    }));
+    return landscapeChecks.get(item.id);
+  }
+  function hydrateEpisodeThumbnails(series) {
+    if (thumbnailObserver) thumbnailObserver.disconnect();
+    async function hydrate(target) {
+      const entry = entryById(series, target.dataset.coverEntry);
+      const candidates = (entry?.media || []).filter(isImage).sort((a, b) =>
+        Number(Boolean(b.imageMediaMetadata?.width)) - Number(Boolean(a.imageMediaMetadata?.width)));
+      for (const candidate of candidates) {
+        if (!target.isConnected) return;
+        if (await verifiedLandscape(candidate)) {
+          if (!target.isConnected) return;
+          const image = document.createElement('img');
+          image.alt = '';
+          image.src = thumbnailUrl(candidate.id);
+          target.replaceChildren(image);
+          return;
+        }
+      }
+    }
+    const targets = app.querySelectorAll('[data-cover-entry]');
+    if (!('IntersectionObserver' in window)) { targets.forEach(hydrate); return; }
+    thumbnailObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          thumbnailObserver.unobserve(entry.target);
+          hydrate(entry.target);
+        }
+      });
+    }, { rootMargin: '300px' });
+    targets.forEach((target) => thumbnailObserver.observe(target));
   }
 
   function bindSeriesControls(series) {
@@ -190,6 +233,7 @@
       <div class="result-bar"><span>${entries.length} MATCHING ENTRIES</span><span>${filters.sort === "desc" ? "NEWEST → OLDEST" : "OLDEST → NEWEST"}</span></div>
       ${entries.length ? `<div class="episode-grid">${entries.slice(0, visibleCount).map((entry) => entryCard(entry, series)).join("")}</div>${visibleCount < entries.length ? `<div class="load-wrap"><button id="load-more" class="load-more" type="button">LOAD ${Math.min(pageSize, entries.length - visibleCount)} MORE</button></div>` : ""}` : `<div class="empty-state">NO ENTRIES MATCH THESE FILTERS.</div>`}`;
     bindSeriesControls(series);
+    hydrateEpisodeThumbnails(series);
     if (resetScroll) window.scrollTo({ top: document.querySelector(".global-search").offsetTop - 12, behavior: "smooth" });
   }
 

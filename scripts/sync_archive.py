@@ -53,7 +53,7 @@ def list_children(folder_id: str) -> list[dict]:
             "https://www.googleapis.com/drive/v3/files",
             {
                 "q": f"'{folder_id}' in parents and trashed = false",
-                "fields": "nextPageToken,files(id,name,description,mimeType,size,modifiedTime,webViewLink)",
+                "fields": "nextPageToken,files(id,name,description,mimeType,size,modifiedTime,webViewLink,imageMediaMetadata(width,height))",
                 "pageSize": 1000,
                 "orderBy": "name",
                 "supportsAllDrives": "true",
@@ -87,6 +87,7 @@ def media_item(item: dict) -> dict:
         "mimeType": item.get("mimeType", ""),
         "size": int(item["size"]) if item.get("size") else None,
         "viewUrl": file_url(item),
+        "imageMediaMetadata": item.get("imageMediaMetadata"),
     }
 
 

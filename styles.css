@@ -76,3 +76,15 @@ h1 span{display:block}
 @media(max-width:980px){.series-grid,.episode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.media-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.site-header{padding:26px 3.5vw}}
 @media(max-width:620px){.site-shell{margin-bottom:30px}.site-header{margin:0;border-width:0 0 1px;padding:14px 15px}.topline{align-items:flex-start;font-size:9px}.top-nav span:first-of-type,.top-nav a:first-child{display:none}.hero-link{display:block;max-width:100%;margin-top:28px;overflow:hidden}h1{font-size:clamp(54px,20vw,82px);line-height:.73}.outline-title{-webkit-text-stroke:1px var(--blue)}.archive-stats{margin-top:28px;font-size:8px;display:grid;grid-template-columns:repeat(2,1fr);row-gap:12px}.archive-stats span{padding:0 8px}.archive-stats span:nth-child(2){border-right:0}.archive-stats span:nth-child(3){padding-left:0}.global-search{margin:18px 15px 0;grid-template-columns:26px 1fr auto;padding:0 10px;min-height:54px}.global-search input{font-size:10px}.breadcrumbs{margin:16px 15px 0}.section-heading{align-items:flex-start;flex-direction:column}.section-heading p{text-align:left}.tile-grid,.series-grid,.episode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.archive-tile.featured{grid-column:1/-1}.archive-tile,.series-grid .archive-tile{min-height:190px;padding:12px}.archive-tile h3,.series-grid .archive-tile h3{font-size:23px}.controls{grid-template-columns:1fr}.episode-card{min-height:255px;padding:12px}.episode-thumb{margin:-12px -12px 0}.episode-card h3{font-size:21px}.episode-meta{font-size:9px}.media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.detail-hero{padding:16px}.detail-hero h2{font-size:38px}.result-bar{align-items:flex-start;flex-direction:column}.site-footer{margin-left:15px;margin-right:15px;font-size:9px}#app{margin-left:15px;margin-right:15px}}
 @media(max-width:390px){.archive-tile,.series-grid .archive-tile{min-height:170px}.archive-tile h3,.series-grid .archive-tile h3{font-size:20px}.media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Responsive review v2 */
+
+.media-grid{display:block;columns:4 250px;column-gap:12px;border:0}
+.media-card{display:block;break-inside:avoid;margin:0 0 12px;border:1px solid var(--line);padding:0}
+.media-preview{display:block;aspect-ratio:auto;min-height:0;padding:0;overflow:visible}
+.media-preview img{display:block;width:100%;height:auto;object-fit:contain}
+.media-info{padding:9px 10px}.media-actions{gap:12px}
+.episode-thumb{aspect-ratio:16/9;display:grid;place-items:center;background:var(--blue-soft);overflow:hidden}
+.episode-thumb img{width:100%;height:100%;object-fit:contain}.episode-thumb span{font:9px "Courier New",monospace}
+@media(max-width:800px){.media-grid{columns:1;column-gap:10px}.media-name{display:none}.media-info{padding:8px}}
+
